@@ -211,11 +211,17 @@ class ZEditor extends Component {
   };
 
   // change editor state when import a file
-
+  /**
+   * @author Shehab Adel
+   * @date 12/08/2022
+   * @update fixed an issue where an uploaded file will be empty if we tried to
+   *  download it immediately after uploading without making any changes. Fixed this issue
+   *  by updating the download state to the new uploaded editor state immediately after uploading.
+   */
   changeEditorStateByUpload = newEditorState => {
     let editorState = EditorState.createWithContent(convertFromRaw(JSON.parse(newEditorState)));
-
     this.setState({ editorState: editorState });
+    this.props.setDownloadState(convertToRaw(this.state.editorState.getCurrentContent()));
   };
 
   insertFN = (symbol, type, side) => {
