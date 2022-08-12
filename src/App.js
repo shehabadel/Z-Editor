@@ -2,6 +2,10 @@ import React, { Component } from 'react';
 import ZEditor from './editor/editor';
 import './App.css';
 import swal from 'sweetalert2';
+import StateToPdfMake from 'draft-js-export-pdfmake';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 class App extends Component {
   state = {
@@ -37,6 +41,34 @@ class App extends Component {
           element.download = `${fileName}.ze`;
           document.body.appendChild(element); // Required for this to work in FireFox
           element.click();
+        }
+      })
+      .catch(error => swal('Error!', `Something went wrong!`, 'Error'));
+  };
+
+  /**
+   * @author Shehab Adel
+   * @description exportAsPDF is a function that converts the downloadState into
+   * a Blob object so it can be downloaded as a PDF file, same as downloadZ function
+   * but it converts it to a .pdf file instead.
+   */
+  exportAsPDF = () => {
+    let fileName = '';
+    swal({
+      title: 'Input file Name',
+      input: 'text',
+      inputPlaceholder: 'File name',
+      allowOutsideClick: false,
+      showCancelButton: true
+    })
+      .then(data => {
+        fileName = data.value;
+        if (fileName) {
+          // https://stackoverflow.com/questions/44656610/download-a-string-as-txt-file-in-react
+          const element = document.createElement('a');
+          const pdfState = new StateToPdfMake(this.state.downloadState);
+          console.log(pdfState.generate());
+          pdfMake.createPdf(pdfState.generate()).download(`${fileName}.pdf`);
         }
       })
       .catch(error => swal('Error!', `Something went wrong!`, 'Error'));
@@ -87,6 +119,9 @@ class App extends Component {
             Download
           </button>
 
+          <button id="exportPDF" className="button" onClick={this.exportAsPDF}>
+            Export as PDF
+          </button>
           <div>
             <label style={{ fontSize: '15px', fontFamily: 'sans-serif' }} className="button" htmlFor="upload-file">
               Import
