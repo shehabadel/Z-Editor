@@ -2,10 +2,8 @@ import React, { Component } from 'react';
 import ZEditor from './editor/editor';
 import './App.css';
 import swal from 'sweetalert2';
-import StateToPdfMake from 'draft-js-export-pdfmake';
-import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+import { jsPDF } from 'jspdf';
+import ReactDOMServer from 'react-dom/server';
 
 class App extends Component {
   state = {
@@ -65,10 +63,17 @@ class App extends Component {
         fileName = data.value;
         if (fileName) {
           // https://stackoverflow.com/questions/44656610/download-a-string-as-txt-file-in-react
-          const element = document.createElement('a');
-          const pdfState = new StateToPdfMake(this.state.downloadState);
-          console.log(pdfState.generate());
-          pdfMake.createPdf(pdfState.generate()).download(`${fileName}.pdf`);
+          const page = document.getElementsByClassName('page rdw-editor-main');
+          const pdfDocument = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: 'a4'
+          });
+          pdfDocument.html(page[0], {
+            callback: function(doc) {
+              doc.save(`${fileName}.pdf`);
+            }
+          });
         }
       })
       .catch(error => swal('Error!', `Something went wrong!`, 'Error'));
